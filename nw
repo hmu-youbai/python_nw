@@ -1,0 +1,34 @@
+from Bio.Align import PairwiseAligner
+import numpy as np
+from Bio.Align.substitution_matrices import Array
+aligner = PairwiseAligner()
+alphabet = "ACGTN"
+substitution_matrix = np.array([
+    [1.0, 0.0, 1.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 1.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0, 1.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0]
+])
+matrix = Array(alphabet, 2,substitution_matrix)
+aligner.mode = 'global'
+aligner.open_gap_score = -5
+aligner.extend_gap_score = -2
+aligner.substitution_matrix = matrix    #定义替换矩阵后不能修改match和mis_match
+
+def nw(read1,read2):
+    alignments = aligner.align(read1, read2)
+    return alignments[0][0],alignments[0][1]
+
+def cut(r1, r2):
+    scores = [1 if r1[i] == r2[i] or (r1[i] == "T" and r2[i] == "C") else -5 for i in range(len(r1))]
+    max_index = max(range(len(scores)), key=lambda i: sum(scores[:i+1]))
+    return max_index
+
+def get_cut(read1,read2):
+    r1,r2=nw(read1,read2)
+    lenth=cut(r1,r2)
+    return lenth+1
+
+
+
